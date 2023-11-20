@@ -38,26 +38,32 @@ def grabar_posts(post: Post):
 def leer_posts(post_id: str):
     if not isinstance(post_id, str):
         raise HTTPException(status_code=400, detail="El ID del post debe ser una cadena de texto")
-    for post in posts:
-        if post["id"] == post_id:
-            return post
-    raise HTTPException(status_code=404, detail="post no encontrado")
+    
+    post = next((post for post in posts if post["id"] == post_id), None)
+    
+    if post is None:
+        raise HTTPException(status_code=404, detail="post no encontrado")
+    
+    return post
 
 
 @app.delete('/posts/{post_id}')
 def eliminar_posts(post_id: str):
-    for index, post in enumerate(posts):
-        if post["id"] == post_id:
-            posts.pop(index)
-            return {"mensaje": "El post se ha eliminado correctamente"}       
-    raise HTTPException(status_code=404, detail="post no encontrado")
+    post = next((post for post in posts if post["id"] == post_id), None)
+    
+    if post is None:
+        raise HTTPException(status_code=404, detail="post no encontrado")
+    
+    posts.remove(post)
+    return {"mensaje": "El post se ha eliminado correctamente"}
 
 
 @app.put('/posts/{post_id}')
 def actualizar_posts(post_id: str, updatedPost: Post):
-    for index, post in enumerate(posts):
-        if post["id"] == post_id:
-            posts[index]["titulo"] = updatedPost.dict()["titulo"]
-            posts[index]["contenido"] = updatedPost.dict()["contenido"]
-            return {"mensaje": "El post se ha actualizado correctamente"}                
-    raise HTTPException(status_code=404, detail="post no encontrado")
+    post = next((post for post in posts if post["id"] == post_id), None)
+    
+    if post is None:
+        raise HTTPException(status_code=404, detail="post no encontrado")
+    
+    post.update(updatedPost.dict())
+    return {"mensaje": "El post se ha actualizado correctamente"}
